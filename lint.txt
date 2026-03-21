@@ -1,0 +1,63 @@
+
+> vindex-intranet@0.0.0 lint
+> eslint .
+
+
+C:\Users\Public\PROGRAMACIÓN\CURSO HTML Y CSS\vindex-intranet\src\components\ExpedienteModals.jsx
+    7:14  error    Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react-refresh/only-export-components
+  210:28  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+  208 |   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  209 |
+> 210 |   const selectedParentId = watch('parentId');
+      |                            ^^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  211 |   const selectedParent = principals.find(p => p.id === selectedParentId) || null;
+  212 |
+  213 |   useEffect(() => {  react-hooks/incompatible-library
+  228:6   warning  React Hook useEffect has a missing dependency: 'selectedParent'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+
+C:\Users\Public\PROGRAMACIÓN\CURSO HTML Y CSS\vindex-intranet\src\contexts\AuthContext.jsx
+  8:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\Public\PROGRAMACIÓN\CURSO HTML Y CSS\vindex-intranet\src\pages\CalendarView.jsx
+  17:25  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+  15 |   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  16 |
+> 17 |   const watchLawyerId = watch('lawyerId');
+     |                         ^^^^^ React Hook Form's `useForm()` API returns a `watch()` function which cannot be memoized safely.
+  18 |   const watchCaseId = watch('caseId');
+  19 |
+  20 |   useEffect(() => {  react-hooks/incompatible-library
+
+C:\Users\Public\PROGRAMACIÓN\CURSO HTML Y CSS\vindex-intranet\src\pages\CatalogsView.jsx
+  110:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+  108 |
+  109 |   useEffect(() => {
+> 110 |     setIsLoading(true);
+      |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  111 |     const unsubAbogados = onSnapshot(collection(db, 'abogados'), snap => {
+  112 |       setAbogados(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+  113 |       setIsLoading(false);  react-hooks/set-state-in-effect
+
+C:\Users\Public\PROGRAMACIÓN\CURSO HTML Y CSS\vindex-intranet\src\pages\Login.jsx
+  27:14  error  'err' is defined but never used  no-unused-vars
+  46:14  error  'err' is defined but never used  no-unused-vars
+
+C:\Users\Public\PROGRAMACIÓN\CURSO HTML Y CSS\vindex-intranet\src\pages\TaskView.jsx
+    3:92  error  'arrayUnion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u             no-unused-vars
+  138:9   error  'toggleStatus' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+✖ 10 problems (7 errors, 3 warnings)
+
