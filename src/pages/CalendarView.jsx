@@ -3,10 +3,12 @@ import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
-import { Plus, Filter, X, Loader2, Search, ExternalLink, Calendar as CalIcon, MessageCircle, Mail } from 'lucide-react';
-import { collection, onSnapshot, addDoc, deleteDoc, doc } from 'firebase/firestore';
+import { Plus, Filter, X, Loader2, Search, ExternalLink, Calendar as CalIcon, MessageCircle, Mail, FileText } from 'lucide-react';
+import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useForm } from 'react-hook-form';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 function EventModal({ isOpen, onClose, onSave, casos, abogados, initialData }) {
   const { register, handleSubmit, reset, watch, setValue } = useForm();
@@ -378,6 +380,61 @@ export default function CalendarView() {
     }
   };
 
+  const exportCalendarPDF = () => {
+    const doc = new jsPDF('landscape');
+    
+    const now = new Date();
+    const currentMonthEvents = events.filter(e => {
+       if (!e.extendedProps.date) return false;
+       // Validar mes y año actual
+       const d = new Date(e.extendedProps.date + 'T00:00:00'); 
+       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    });
+    
+    currentMonthEvents.sort((a,b) => {
+       const dateA = new Date(`${a.extendedProps.date}T${a.extendedProps.startTime || '00:00'}`);
+       const dateB = new Date(`${b.extendedProps.date}T${b.extendedProps.startTime || '00:00'}`);
+       return dateA - dateB;
+    });
+
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(15, 23, 42); 
+    doc.text(`Agenda de Eventos VINDEX - ${now.toLocaleString('es-ES', {month: 'long', year: 'numeric'}).toUpperCase()}`, 14, 20);
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100);
+    doc.text(`Total eventos en el mes: ${currentMonthEvents.length} | Generado: ${now.toLocaleString()}`, 14, 28);
+    
+    const tableData = currentMonthEvents.map(e => [
+       e.extendedProps.date || '-',
+       `${e.extendedProps.startTime || ''} - ${e.extendedProps.endTime || ''}`,
+       e.title || '-',
+       e.extendedProps.caseInfo || '-',
+       e.extendedProps.lawyerName || '-',
+       e.extendedProps.clientName || '-',
+       e.extendedProps.clientPhone || e.extendedProps.clientEmail ? `${e.extendedProps.clientPhone || ''}\n${e.extendedProps.clientEmail || ''}`.trim() : '-'
+    ]);
+
+    autoTable(doc, {
+      startY: 35,
+      head: [['Fecha', 'Hora', 'Evento / Asunto', 'Expediente', 'Abogado Asignado', 'Cliente', 'Contacto']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontSize: 9 },
+      styles: { fontSize: 8, cellPadding: 3, overflow: 'linebreak' },
+      columnStyles: {
+        2: { cellWidth: 40 },
+        3: { cellWidth: 50 },
+        6: { cellWidth: 35 }
+      },
+      alternateRowStyles: { fillColor: [248, 250, 252] }
+    });
+    
+    doc.save(`VINDEX_Agenda_${now.toLocaleString('es-ES', {month: 'long'})}_${now.getFullYear()}.pdf`);
+  };
+
   return (
     <div className="h-full flex flex-col bg-white rounded-2xl shadow-sm border border-brand-200 overflow-hidden relative">
       <div className="flex items-center justify-between p-6 border-b border-brand-200 bg-brand-50 shrink-0">
@@ -389,6 +446,10 @@ export default function CalendarView() {
            <p className="text-brand-600 text-xs mt-0.5 font-bold uppercase tracking-wider">Planificación y Notificación Bilateral Inteligente</p>
         </div>
          <div className="flex gap-3">
+          <button onClick={exportCalendarPDF} className="flex items-center gap-2 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 border border-rose-200 hover:border-rose-300 px-5 py-2.5 rounded-lg font-bold shadow-sm transition-all text-xs tracking-wide uppercase">
+            <FileText size={16} strokeWidth={2.5} />
+            PDF Mes Actual
+          </button>
           <button onClick={() => { setEventToEdit(null); setIsModalOpen(true); }} className="flex items-center gap-2 bg-brand-900 hover:bg-brand-800 text-white px-5 py-2.5 rounded-lg font-bold shadow-md shadow-brand-900/20 transition-all text-xs tracking-wide uppercase">
             <Plus size={16} strokeWidth={3} />
             Agendar Evento VINDEX

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Search, ShieldAlert, Trash2 } from 'lucide-react';
+import { X, Plus, Search, ShieldAlert, Trash2, MessageSquare, Send } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { collection, onSnapshot, addDoc } from 'firebase/firestore';
+import { collection, onSnapshot, addDoc, doc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { useAuth } from '../contexts/AuthContext';
 
 const STAGES = [
   { id: '1', title: 'Preparación' },
@@ -19,11 +20,59 @@ const STAGES = [
   { id: '12', title: 'Archivado' }
 ];
 
+// Reusable Comments Section Component
+const CommentsSection = ({ comments, newComment, setNewComment, addComment }) => (
+  <div className="mt-8 pt-6 border-t border-brand-200">
+    <h3 className="text-[11px] font-bold text-brand-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+       <MessageSquare size={16}/> 3. Bitácora y Comentarios
+    </h3>
+    <div className="bg-brand-50 border border-brand-200 rounded-xl p-4 flex gap-3 shadow-sm mb-4">
+       <input 
+         type="text" 
+         className="flex-1 border border-brand-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-900 focus:border-brand-900 outline-none"
+         placeholder="Añade un comentario sobre el estado o progreso..."
+         value={newComment}
+         onChange={(e) => setNewComment(e.target.value)}
+         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addComment(); } }}
+       />
+       <button 
+         type="button" 
+         onClick={addComment}
+         className="bg-brand-900 hover:bg-brand-800 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors text-xs uppercase tracking-wider"
+       >
+         <Send size={14}/> Comentar
+       </button>
+    </div>
+
+    {comments && comments.length > 0 ? (
+      <div className="space-y-3 max-h-[250px] overflow-y-auto px-1 custom-scrollbar">
+         {comments.map((c, i) => (
+            <div key={i} className="bg-white border border-brand-100 p-4 rounded-xl shadow-sm relative">
+               <div className="flex justify-between items-start mb-2">
+                 <span className="text-[10px] font-black text-brand-900 bg-brand-100 px-2 py-1 rounded-md">{c.author}</span>
+                 <span className="text-[9px] font-bold text-brand-500 uppercase">{new Date(c.date).toLocaleString()}</span>
+               </div>
+               <p className="text-sm text-brand-800 leading-relaxed font-medium">{c.text}</p>
+            </div>
+         ))}
+      </div>
+    ) : (
+      <div className="text-center py-6 text-brand-400 text-sm font-bold bg-white border border-dashed border-brand-200 rounded-xl">
+         No hay comentarios registrados en este expediente.
+      </div>
+    )}
+  </div>
+);
+
 export function PrincipalModal({ isOpen, onClose, onSave, onDelete, initialData }) {
+  const { userData } = useAuth();
   const { register, handleSubmit, reset, setValue } = useForm();
   const [entidades, setEntidades] = useState([]);
   const [abogados, setAbogados] = useState([]);
   const [materias, setMaterias] = useState([]);
+  
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
 
   useEffect(() => {
     if (!isOpen) return;
@@ -49,9 +98,12 @@ export function PrincipalModal({ isOpen, onClose, onSave, onDelete, initialData 
     if (isOpen) {
       if (initialData) {
         reset(initialData);
+        setComments(initialData.comments || []);
       } else {
         reset({ title: '', clientName: '', clientRuc: '', phone: '', email: '', address: '', matter: '', entity: '', juzgado: '', corte: '', lawyer: '', stageId: '' });
+        setComments([]);
       }
+      setNewComment('');
     }
   }, [isOpen, initialData, reset]);
 
@@ -84,6 +136,27 @@ export function PrincipalModal({ isOpen, onClose, onSave, onDelete, initialData 
     } catch (e) { console.error(e); }
   };
 
+  const addComment = async () => {
+    if (!newComment.trim()) return;
+    const comment = {
+      text: newComment.trim(),
+      date: new Date().toISOString(),
+      author: userData?.nombre || 'Usuario'
+    };
+    const newCommentsList = [comment, ...comments];
+    setComments(newCommentsList);
+    setNewComment('');
+
+    // Auto-guardar en Firebase inmediatamente si el expediente ya existe
+    if (initialData?.id) {
+      try {
+         await updateDoc(doc(db, 'casos', initialData.id), { comments: newCommentsList });
+      } catch (err) {
+         console.error("Error al autoguardar comentario:", err);
+      }
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-brand-900/60 backdrop-blur-[2px] flex items-center justify-center z-[100] p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col border border-brand-200">
@@ -96,7 +169,7 @@ export function PrincipalModal({ isOpen, onClose, onSave, onDelete, initialData 
         </div>
         
         <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
-          <form id="principalForm" onSubmit={handleSubmit((data) => onSave({ ...data, type: 'principal' }))} className="space-y-8">
+          <form id="principalForm" onSubmit={handleSubmit((data) => onSave({ ...data, type: 'principal', comments }))} className="space-y-8">
             {/* Sección Cliente */}
             <div>
               <h3 className="text-[11px] font-bold text-brand-600 uppercase tracking-widest mb-4 border-b border-brand-100 pb-2">1. Información del Cliente</h3>
@@ -179,6 +252,14 @@ export function PrincipalModal({ isOpen, onClose, onSave, onDelete, initialData 
                 </div>
               </div>
             </div>
+            
+            <CommentsSection 
+              comments={comments} 
+              newComment={newComment} 
+              setNewComment={setNewComment} 
+              addComment={addComment} 
+            />
+
           </form>
         </div>
         
@@ -201,11 +282,15 @@ export function PrincipalModal({ isOpen, onClose, onSave, onDelete, initialData 
 }
 
 export function CautelarModal({ isOpen, onClose, onSave, onDelete, initialData, principals = [] }) {
+  const { userData } = useAuth();
   const { register, handleSubmit, reset, watch, setValue } = useForm();
   const [abogados, setAbogados] = useState([]);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const [comments, setComments] = useState([]);
+  const [newComment, setNewComment] = useState('');
 
   const selectedParentId = watch('parentId');
   const selectedParent = principals.find(p => p.id === selectedParentId) || null;
@@ -231,10 +316,13 @@ export function CautelarModal({ isOpen, onClose, onSave, onDelete, initialData, 
     if (isOpen) {
       if (initialData) {
         reset(initialData);
+        setComments(initialData.comments || []);
       } else {
         reset({ title: '', parentId: '', lawyer: '', stageId: '' });
         setSearchTerm('');
+        setComments([]);
       }
+      setNewComment('');
     }
   }, [isOpen, initialData, reset]);
 
@@ -269,8 +357,30 @@ export function CautelarModal({ isOpen, onClose, onSave, onDelete, initialData, 
       matter: selectedParent.matter || '',
       entity: selectedParent.entity || '',
       juzgado: selectedParent.juzgado || '',
-      corte: selectedParent.corte || ''
+      corte: selectedParent.corte || '',
+      comments
     });
+  };
+
+  const addComment = async () => {
+    if (!newComment.trim()) return;
+    const comment = {
+      text: newComment.trim(),
+      date: new Date().toISOString(),
+      author: userData?.nombre || 'Usuario'
+    };
+    const newCommentsList = [comment, ...comments];
+    setComments(newCommentsList);
+    setNewComment('');
+
+    // Auto-guardar en Firebase inmediatamente si el cuaderno cautelar ya existe
+    if (initialData?.id) {
+      try {
+         await updateDoc(doc(db, 'casos', initialData.id), { comments: newCommentsList });
+      } catch (err) {
+         console.error("Error al autoguardar comentario:", err);
+      }
+    }
   };
 
   return (
@@ -403,6 +513,16 @@ export function CautelarModal({ isOpen, onClose, onSave, onDelete, initialData, 
                   </select>
                 </div>
               </div>
+            </div>
+
+            {/* Bitacora */}
+            <div className={`transition-opacity duration-300 ${!selectedParent ? 'opacity-40 pointer-events-none' : 'opacity-100'}`}>
+               <CommentsSection 
+                 comments={comments} 
+                 newComment={newComment} 
+                 setNewComment={setNewComment} 
+                 addComment={addComment} 
+               />
             </div>
             
           </form>

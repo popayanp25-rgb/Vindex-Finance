@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, CheckSquare, Calendar, Database, LogOut, Users, X, Loader2, Mail, Lock, Archive, PieChart, Moon, Sun } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Calendar, Database, LogOut, Users, X, Loader2, Mail, Lock, Archive, PieChart } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { doc, updateDoc, collection, query, where, onSnapshot } from 'firebase/firestore';
 import { sendPasswordResetEmail } from 'firebase/auth';
@@ -16,19 +17,11 @@ export default function Layout() {
   const [profileData, setProfileData] = useState({ nombre: '', telefono: '', direccion: '' });
   const [profileMsg, setProfileMsg] = useState({ text: '', type: '' });
   
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return localStorage.getItem('theme') === 'dark';
-  });
-
+  // Limpia cualquier preferencia anterior de dark mode
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [isDarkMode]);
+    document.documentElement.classList.remove('dark');
+    localStorage.removeItem('theme');
+  }, []);
 
   // Hook global de notificaciones push
   useEffect(() => {
@@ -138,8 +131,8 @@ export default function Layout() {
   return (
     <div className="flex h-screen overflow-hidden font-sans glass-bg">
       {/* Sidebar navigation */}
-      <div className="w-64 bg-brand-900/95 dark:bg-slate-950/90 backdrop-blur-xl border-r border-brand-800 dark:border-slate-800 flex flex-col shrink-0 shadow-xl z-20 transition-colors duration-500">
-        <div className="h-20 flex items-center justify-center border-b border-brand-800 dark:border-slate-800">
+      <div className="w-64 bg-brand-900/95 dark:bg-slate-950/90 backdrop-blur-xl border-r border-brand-800 dark:border-slate-700 flex flex-col shrink-0 shadow-xl z-20 transition-colors duration-500">
+        <div className="h-20 flex items-center justify-center border-b border-brand-800 dark:border-slate-700">
           <div className="text-center">
             <h1 className="text-2xl font-black text-white tracking-tight">VINDEX</h1>
             <p className="text-brand-400 font-bold uppercase tracking-[0.2em] text-[8px] mt-0.5">Legal Group</p>
@@ -180,19 +173,6 @@ export default function Layout() {
             </div>
           </div>
           
-          <button 
-            onClick={() => setIsDarkMode(!isDarkMode)}
-            className="flex items-center justify-between px-4 py-2.5 w-full bg-brand-800/50 hover:bg-brand-800 dark:bg-slate-800/50 dark:hover:bg-slate-800 text-brand-200 rounded-lg transition-colors text-xs font-bold uppercase tracking-wider mb-2"
-          >
-            <span className="flex items-center gap-2">
-               {isDarkMode ? <Sun size={16} className="text-amber-400" /> : <Moon size={16} />} 
-               Oscuro
-            </span>
-            <div className={`w-8 h-4 rounded-full flex items-center p-0.5 transition-colors ${isDarkMode ? 'bg-blue-500' : 'bg-brand-900'}`}>
-              <div className={`w-3 h-3 rounded-full bg-white transition-transform ${isDarkMode ? 'translate-x-4' : ''}`}></div>
-            </div>
-          </button>
-
           <button 
             onClick={logout}
             className="flex items-center justify-center gap-2 px-4 py-2.5 w-full bg-brand-800 hover:bg-brand-700 dark:bg-slate-800 dark:hover:bg-slate-700 hover:text-white text-brand-200 rounded-lg transition-colors text-xs font-bold uppercase tracking-wider"
@@ -261,14 +241,14 @@ export default function Layout() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-20 glass-panel border-b-0 flex items-center justify-between px-10 shrink-0 shadow-sm relative z-10 rounded-none border-t-0 border-x-0">
+        <header className="h-20 glass-panel border-b-0 flex items-center justify-between px-10 shrink-0 shadow-sm relative rounded-none border-t-0 border-x-0">
           <h2 className="text-xl font-black text-brand-900 dark:text-white tracking-tight">
              {navigation.find(n => location.pathname.startsWith(n.href))?.name || "Panel de Comando"}
           </h2>
           <div className="hidden"></div>
         </header>
 
-        <main className="flex-1 overflow-auto p-8 relative custom-scrollbar z-0">
+        <main className="flex-1 overflow-auto p-8 relative custom-scrollbar">
            <AnimatePresence mode="wait">
              <motion.div
                key={location.pathname}

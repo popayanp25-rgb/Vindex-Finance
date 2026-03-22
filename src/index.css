@@ -21,7 +21,7 @@
 }
 
 .dark .glass-bg {
-  background: linear-gradient(-45deg, #020617, #0f172a, #1e293b, #172554);
+  background: linear-gradient(-45deg, #000000, #18181b, #27272a, #09090b);
   background-size: 400% 400%;
   animation: gradientBG 20s ease infinite;
 }

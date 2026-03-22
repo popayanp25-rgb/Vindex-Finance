@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import React, { useState, useEffect } from 'react';
 import { Search, Plus, Phone, Mail, MapPin, Briefcase, Edit2, Trash2, X, Users, AlertCircle, ExternalLink } from 'lucide-react';
 import { collection, onSnapshot, addDoc, updateDoc, deleteDoc, doc, query, where, getDocs } from 'firebase/firestore';
@@ -23,12 +24,12 @@ function ClientModal({ isOpen, onClose, onSave, initialData }) {
   return (
     <div className="fixed inset-0 bg-brand-900/60 backdrop-blur-[2px] flex items-center justify-center z-[100] p-4">
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg border border-brand-200 dark:border-slate-700 flex flex-col">
-        <div className="p-6 border-b border-brand-200 dark:border-slate-800 flex justify-between items-center bg-brand-50 dark:bg-slate-800/50 shrink-0">
+        <div className="p-6 border-b border-brand-200 dark:border-slate-700 flex justify-between items-center bg-brand-50 dark:bg-slate-800/50 shrink-0">
            <div className="flex items-center gap-3">
              <div className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 p-2 rounded-lg shadow-sm"><Users size={20} strokeWidth={2.5}/></div>
              <h2 className="text-xl font-black text-brand-900 dark:text-white">{initialData ? 'Editar Cliente' : 'Nuevo Contratante'}</h2>
            </div>
-           <button onClick={onClose} className="text-brand-400 dark:text-slate-500 hover:text-brand-900 dark:hover:text-white p-1.5 hover:bg-white dark:hover:bg-slate-800 rounded-full transition-colors border border-transparent hover:border-brand-200 dark:hover:border-slate-700"><X size={20}/></button>
+           <button onClick={onClose} className="text-brand-400 dark:text-slate-300 hover:text-brand-900 dark:hover:text-white p-1.5 hover:bg-white dark:hover:bg-slate-800 rounded-full transition-colors border border-transparent hover:border-brand-200 dark:hover:border-slate-700"><X size={20}/></button>
         </div>
 
         <div className="p-6 overflow-y-auto">
@@ -71,7 +72,7 @@ function ClientModal({ isOpen, onClose, onSave, initialData }) {
           </form>
         </div>
 
-        <div className="p-5 border-t border-brand-200 dark:border-slate-800 bg-brand-50 dark:bg-slate-800/50 flex justify-end gap-3 rounded-b-2xl">
+        <div className="p-5 border-t border-brand-200 dark:border-slate-700 bg-brand-50 dark:bg-slate-800/50 flex justify-end gap-3 rounded-b-2xl">
            <button type="button" onClick={onClose} className="px-5 py-2.5 border border-brand-300 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-lg text-brand-700 dark:text-slate-300 hover:bg-brand-50 dark:hover:bg-slate-700 font-bold transition-colors text-xs uppercase tracking-wider">Cancelar</button>
            <button type="submit" form="crmForm" className="px-6 py-2.5 bg-brand-900 hover:bg-brand-800 dark:bg-blue-600 dark:hover:bg-blue-500 text-white rounded-lg font-bold transition-all shadow-md text-xs uppercase tracking-wider">
              {initialData ? 'Guardar Cambios' : 'Registrar Cliente'}
@@ -105,15 +106,15 @@ function CasesModal({ isOpen, onClose, clientName }) {
   return (
     <div className="fixed inset-0 bg-brand-900/60 backdrop-blur-[2px] flex items-center justify-center z-[100] p-4">
       <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl border border-brand-200 dark:border-slate-700 flex flex-col max-h-[85vh]">
-        <div className="p-6 border-b border-brand-200 dark:border-slate-800 flex justify-between items-center bg-brand-50 dark:bg-slate-800/50 shrink-0">
+        <div className="p-6 border-b border-brand-200 dark:border-slate-700 flex justify-between items-center bg-brand-50 dark:bg-slate-800/50 shrink-0">
            <div className="flex items-center gap-3">
              <div className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 p-2 rounded-lg shadow-sm"><Briefcase size={20} strokeWidth={2.5}/></div>
              <div>
                <h2 className="text-xl font-black text-brand-900 dark:text-white">Expedientes Asociados</h2>
-               <p className="text-xs text-brand-500 dark:text-slate-400 font-bold uppercase tracking-wider">{clientName}</p>
+               <p className="text-xs text-brand-500 dark:text-slate-200 font-bold uppercase tracking-wider">{clientName}</p>
              </div>
            </div>
-           <button onClick={onClose} className="text-brand-400 dark:text-slate-500 hover:text-brand-900 dark:hover:text-white p-1.5 hover:bg-white dark:hover:bg-slate-800 rounded-full transition-colors border border-transparent hover:border-brand-200 dark:hover:border-slate-700"><X size={20}/></button>
+           <button onClick={onClose} className="text-brand-400 dark:text-slate-300 hover:text-brand-900 dark:hover:text-white p-1.5 hover:bg-white dark:hover:bg-slate-800 rounded-full transition-colors border border-transparent hover:border-brand-200 dark:hover:border-slate-700"><X size={20}/></button>
         </div>
 
         <div className="p-6 overflow-y-auto bg-slate-50 dark:bg-slate-900/50 flex-1">
@@ -125,7 +126,7 @@ function CasesModal({ isOpen, onClose, clientName }) {
                   <div key={c.id} className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-brand-200 dark:border-slate-700 flex justify-between items-center group">
                      <div>
                        <h4 className="font-mono text-sm font-bold text-brand-900 dark:text-white">{c.title}</h4>
-                       <div className="flex items-center gap-3 mt-1.5 text-xs text-brand-600 dark:text-slate-400 font-medium font-sans">
+                       <div className="flex items-center gap-3 mt-1.5 text-xs text-brand-600 dark:text-slate-200 font-medium font-sans">
                          <span className="bg-brand-50 dark:bg-slate-700 px-2 py-0.5 rounded border border-brand-100 dark:border-slate-600 text-brand-700 dark:text-slate-300">{c.type === 'principal' ? 'Principal' : 'Cautelar'}</span>
                          <span>Materia: {c.matter || 'N/A'}</span>
                          <span>Fase actual: {c.stageId}</span>
@@ -141,7 +142,7 @@ function CasesModal({ isOpen, onClose, clientName }) {
              <div className="text-center py-12">
                <Briefcase size={48} className="mx-auto text-brand-200 dark:text-slate-700 mb-4" />
                <p className="text-brand-900 dark:text-white font-bold text-lg mb-1">Sin Expedientes</p>
-               <p className="text-brand-500 dark:text-slate-400 text-sm">Este cliente aún no tiene casos registrados con coincidencia exacta de nombre.</p>
+               <p className="text-brand-500 dark:text-slate-200 text-sm">Este cliente aún no tiene casos registrados con coincidencia exacta de nombre.</p>
              </div>
           )}
         </div>
@@ -235,8 +236,8 @@ export default function CrmView() {
     <div className="h-full flex flex-col max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between border-b border-brand-200 dark:border-slate-700 pb-5 shrink-0 gap-4 transition-colors duration-500">
         <div>
-           <div className="flex items-center gap-2 text-brand-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1 transition-colors duration-500">
-             <Users size={14} className="text-brand-400 dark:text-slate-500"/> CRM VINDEX
+           <div className="flex items-center gap-2 text-brand-500 dark:text-slate-200 text-xs font-bold uppercase tracking-wider mb-1 transition-colors duration-500">
+             <Users size={14} className="text-brand-400 dark:text-slate-300"/> CRM VINDEX
            </div>
            <h1 className="text-3xl font-black text-brand-900 dark:text-white tracking-tight transition-colors duration-500">Directorio de Clientes</h1>
            <p className="text-brand-600 dark:text-slate-300 font-medium text-sm mt-1 transition-colors duration-500">Gestión centralizada de contactos y asociación de expedientes.</p>
@@ -253,7 +254,7 @@ export default function CrmView() {
         
         {/* Búsqueda */}
         <div className="relative shrink-0">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-400 dark:text-slate-500 z-10" size={20} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-400 dark:text-slate-300 z-10" size={20} />
           <input
             type="text"
             placeholder="Buscar por Nombre, Razón Social, o DNI/RUC..."
@@ -278,34 +279,34 @@ export default function CrmView() {
                             {cliente.tipo}
                           </span>
                           <h3 className="text-lg font-black text-brand-900 dark:text-white leading-tight transition-colors">{cliente.nombre}</h3>
-                          {cliente.documento && <p className="text-xs text-brand-500 dark:text-slate-400 font-medium mt-1 uppercase tracking-wider transition-colors">DOC: {cliente.documento}</p>}
+                          {cliente.documento && <p className="text-xs text-brand-500 dark:text-slate-200 font-medium mt-1 uppercase tracking-wider transition-colors">DOC: {cliente.documento}</p>}
                        </div>
                        
                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                         <button onClick={() => { setEditingClient(cliente); setIsModalOpen(true); }} className="p-1.5 text-brand-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-md transition-colors"><Edit2 size={16}/></button>
-                         <button onClick={() => handleDeleteClient(cliente.id, cliente.nombre)} className="p-1.5 text-brand-400 dark:text-slate-500 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-slate-800 rounded-md transition-colors"><Trash2 size={16}/></button>
+                         <button onClick={() => { setEditingClient(cliente); setIsModalOpen(true); }} className="p-1.5 text-brand-400 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-md transition-colors"><Edit2 size={16}/></button>
+                         <button onClick={() => handleDeleteClient(cliente.id, cliente.nombre)} className="p-1.5 text-brand-400 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-slate-800 rounded-md transition-colors"><Trash2 size={16}/></button>
                        </div>
                      </div>
 
-                     <div className="space-y-2.5 flex-1 mt-2 border-t border-brand-100 dark:border-slate-800 pt-4 transition-colors">
+                     <div className="space-y-2.5 flex-1 mt-2 border-t border-brand-100 dark:border-slate-700 pt-4 transition-colors">
                        {cliente.telefono && (
                          <div className="flex items-center gap-2.5 text-sm text-brand-700 dark:text-slate-300 transition-colors">
-                           <Phone size={14} className="text-brand-400 dark:text-slate-500"/> <span className="font-medium">{cliente.telefono}</span>
+                           <Phone size={14} className="text-brand-400 dark:text-slate-300"/> <span className="font-medium">{cliente.telefono}</span>
                          </div>
                        )}
                        {cliente.correo && (
                          <div className="flex items-center gap-2.5 text-sm text-brand-700 dark:text-slate-300 transition-colors">
-                           <Mail size={14} className="text-brand-400 dark:text-slate-500"/> <span className="font-medium truncate">{cliente.correo}</span>
+                           <Mail size={14} className="text-brand-400 dark:text-slate-300"/> <span className="font-medium truncate">{cliente.correo}</span>
                          </div>
                        )}
                        {cliente.direccion && (
                          <div className="flex items-center gap-2.5 text-sm text-brand-700 dark:text-slate-300 transition-colors">
-                           <MapPin size={14} className="text-brand-400 dark:text-slate-500 shrink-0"/> <span className="font-medium truncate">{cliente.direccion}</span>
+                           <MapPin size={14} className="text-brand-400 dark:text-slate-300 shrink-0"/> <span className="font-medium truncate">{cliente.direccion}</span>
                          </div>
                        )}
                      </div>
 
-                     <div className="mt-5 pt-3 flex items-center justify-between border-t border-brand-50 dark:border-slate-800/50 transition-colors">
+                     <div className="mt-5 pt-3 flex items-center justify-between border-t border-brand-50 dark:border-slate-700/50 transition-colors">
                         <button 
                           onClick={() => setCasesModalClient(cliente.nombre)}
                           className="flex items-center gap-2 text-brand-600 dark:text-slate-300 hover:text-brand-900 dark:hover:text-white font-black text-xs uppercase tracking-wider transition-colors w-full justify-center bg-brand-50 dark:bg-slate-800 hover:bg-brand-100 dark:hover:bg-slate-700 py-2.5 rounded-lg"
@@ -321,7 +322,7 @@ export default function CrmView() {
              <div className="text-center py-20 bg-white/50 dark:bg-slate-900/50 border-2 border-dashed border-brand-200 dark:border-slate-700 rounded-3xl transition-colors">
                <Users size={64} className="mx-auto text-brand-200 dark:text-slate-700 mb-5" />
                <p className="text-brand-900 dark:text-white font-bold text-xl mb-2">Sin registros encontrados</p>
-               <p className="text-brand-500 dark:text-slate-400 font-medium text-sm max-w-sm mx-auto">No existen clientes en el directorio que coincidan con tu búsqueda actual.</p>
+               <p className="text-brand-500 dark:text-slate-200 font-medium text-sm max-w-sm mx-auto">No existen clientes en el directorio que coincidan con tu búsqueda actual.</p>
              </div>
           )}
         </div>
