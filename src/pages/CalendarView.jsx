@@ -84,7 +84,7 @@ function EventModal({ isOpen, onClose, onSave, casos, abogados, initialData }) {
         </div>
         
         <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
-          <form id="intelligentEventForm" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form id="intelligentEventForm" onSubmit={handleSubmit(onSubmit)} className="space-y-3">
             
             {/* Título y Fechas */}
             <div className="space-y-4">
@@ -113,7 +113,7 @@ function EventModal({ isOpen, onClose, onSave, casos, abogados, initialData }) {
             {/* Referencia de Caso Inteligente */}
             <div className="relative">
               <label className="block text-xs font-bold text-brand-700 mb-1 flex items-center gap-1">
-                <Search size={14}/> Buscar Expediente / Cliente <span className="text-brand-500">*</span>
+                <Search size={14}/> Buscar Cuaderno / Cliente <span className="text-brand-500">*</span>
               </label>
               <input 
                   type="text"
@@ -139,7 +139,7 @@ function EventModal({ isOpen, onClose, onSave, casos, abogados, initialData }) {
                         </div>
                       ))
                     ) : (
-                      <div className="px-4 py-3 text-sm text-brand-500 text-center">No se encontraron expedientes.</div>
+                      <div className="px-4 py-3 text-sm text-brand-500 text-center">No se encontraron cuadernos de cobranza.</div>
                     )}
                   </div>
                 )}
@@ -222,7 +222,7 @@ function ActionModal({ isOpen, onClose, event, onDelete, onEdit }) {
   const notifyClientWhatsApp = () => {
     if(!event.clientPhone) return alert("El cliente no tiene un teléfono registrado.");
     const number = event.clientPhone.replace(/\D/g, '');
-    let msg = `Estimado(a) ${event.clientName || 'Cliente'},\n\nLe informamos que se ha programado una diligencia legal de carácter obligatorio:\n\n⚖️ *Detalles de la Audiencia:*\n\n*Asunto:* ${event.title}\n\n*Expediente:* ${event.caseInfo}\n\n*Fecha:* ${event.date}\n\n*Hora:* ${event.startTime}`;
+    let msg = `Estimado(a) ${event.clientName || 'Cliente'},\n\nLe informamos que se ha programado una diligencia legal de carácter obligatorio:\n\n⚖️ *Detalles de la Audiencia:*\n\n*Asunto:* ${event.title}\n\n*Cuaderno:* ${event.caseInfo}\n\n*Fecha:* ${event.date}\n\n*Hora:* ${event.startTime}`;
     if (event.meetUrl) msg += `\n\n*Link:* ${event.meetUrl}`;
     msg += `\n\n📌 *Acción requerida:* Por favor, confirme su asistencia respondiendo a este mensaje. Su presencia es fundamental para el proceso.\n\nAtentamente,\nVINDEX LEGAL GROUP`;
     window.open(`https://wa.me/${number}?text=${encodeURIComponent(msg)}`, '_blank');
@@ -231,16 +231,16 @@ function ActionModal({ isOpen, onClose, event, onDelete, onEdit }) {
   const notifyLawyerWhatsApp = () => {
     if(!event.lawyerPhone) return alert("El abogado no tiene un teléfono registrado.");
     const number = event.lawyerPhone.replace(/\D/g, '');
-    let msg = `Hola, ${event.lawyerName || 'Doctor(a)'}. Se le informa que tiene un nuevo evento programado en su agenda:\n\n📂 *Información del Caso:*\n\n*Evento:* ${event.title}\n\n*Expediente:* ${event.caseInfo}\n\n*Fecha:* ${event.date}\n\n*Hora:* ${event.startTime}`;
+    let msg = `Hola, ${event.lawyerName || 'Doctor(a)'}. Se le informa que tiene un nuevo evento programado en su agenda:\n\n📂 *Información del Caso:*\n\n*Evento:* ${event.title}\n\n*Cuaderno:* ${event.caseInfo}\n\n*Fecha:* ${event.date}\n\n*Hora:* ${event.startTime}`;
     if(event.meetUrl) msg += `\n\n*Link:* ${event.meetUrl}`;
-    msg += `\n\nSaludos,\nVINDEX Intranet`;
+    msg += `\n\nSaludos,\nVINDEX LEGAL GROUP`;
     window.open(`https://wa.me/${number}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
   const notifyClientEmail = () => {
     if(!event.clientEmail) return alert("El cliente no tiene un correo registrado.");
     const subject = encodeURIComponent(`Notificación de Audiencia: ${event.title}`);
-    let body = `Estimado(a) ${event.clientName || 'Cliente'},\n\nLe informamos que se ha programado una diligencia legal de carácter obligatorio:\n\nDetalles de la Audiencia:\nAsunto: ${event.title}\nExpediente: ${event.caseInfo}\nFecha: ${event.date}\nHora: ${event.startTime}`;
+    let body = `Estimado(a) ${event.clientName || 'Cliente'},\n\nLe informamos que se ha programado una diligencia legal de carácter obligatorio:\n\nDetalles de la Audiencia:\nAsunto: ${event.title}\nCuaderno: ${event.caseInfo}\nFecha: ${event.date}\nHora: ${event.startTime}`;
     if (event.meetUrl) body += `\nLink: ${event.meetUrl}`;
     body += `\n\nAcción requerida: Por favor, confirme su asistencia respondiendo a este mensaje. Su presencia es fundamental para el proceso.\n\nAtentamente,\nVINDEX LEGAL GROUP`;
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${event.clientEmail}&su=${subject}&body=${encodeURIComponent(body)}`;
@@ -250,16 +250,16 @@ function ActionModal({ isOpen, onClose, event, onDelete, onEdit }) {
   const notifyLawyerEmail = () => {
     if(!event.lawyerEmail) return alert("El abogado no tiene un correo registrado.");
     const subject = encodeURIComponent(`Nuevo Evento Asignado: ${event.title}`);
-    let body = `Hola, ${event.lawyerName || 'Doctor(a)'}.\n\nSe le informa que tiene un nuevo evento programado en su agenda:\n\nInformación del Caso:\nEvento: ${event.title}\nExpediente: ${event.caseInfo}\nFecha: ${event.date}\nHora: ${event.startTime}`;
+    let body = `Hola, ${event.lawyerName || 'Doctor(a)'}.\n\nSe le informa que tiene un nuevo evento programado en su agenda:\n\nInformación del Caso:\nEvento: ${event.title}\nCuaderno: ${event.caseInfo}\nFecha: ${event.date}\nHora: ${event.startTime}`;
     if(event.meetUrl) body += `\nLink: ${event.meetUrl}`;
-    body += `\n\nSaludos,\nVINDEX Intranet`;
+    body += `\n\nSaludos,\nVINDEX LEGAL GROUP`;
     const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${event.lawyerEmail}&su=${subject}&body=${encodeURIComponent(body)}`;
     window.open(gmailUrl, '_blank');
   };
 
   return (
     <div className="fixed inset-0 bg-brand-900/40 backdrop-blur-[1px] flex items-center justify-center z-[150] p-4">
-       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm flex flex-col border border-brand-200 p-6 space-y-6">
+       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm flex flex-col border border-brand-200 p-6 space-y-3">
           <div>
             <h3 className="text-xl font-black text-brand-900">{event.title}</h3>
             <p className="text-xs text-brand-600 font-bold uppercase tracking-wider mt-1">{event.date} | {event.startTime} - {event.endTime}</p>
@@ -351,9 +351,9 @@ export default function CalendarView() {
       // Aproximación a formato ISO sin Z (local timezone en GCal)
       const datesParam = `${datePartLocalStr}T${startTimeStr}/${datePartLocalStr}T${endTimeStr}`;
       
-      let details = `**Expediente / Cliente:** ${data.caseInfo}\n**Abogado Asignado:** ${data.lawyerName}\n`;
+      let details = `**Cuaderno / Cliente:** ${data.caseInfo}\n**Abogado Asignado:** ${data.lawyerName}\n`;
       if (data.meetUrl) details += `\n**Link:** ${data.meetUrl}`;
-      details += `\n\n--- Generado automáticamente por VINDEX Intranet ---`;
+      details += `\n\n--- Generado automáticamente por VINDEX LEGAL GROUP ---`;
 
       const emails = [data.clientEmail, data.lawyerEmail].filter(e => e && e.includes('@')).join(',');
 
@@ -419,7 +419,7 @@ export default function CalendarView() {
 
     autoTable(doc, {
       startY: 35,
-      head: [['Fecha', 'Hora', 'Evento / Asunto', 'Expediente', 'Abogado Asignado', 'Cliente', 'Contacto']],
+      head: [['Fecha', 'Hora', 'Evento / Asunto', 'Cuaderno / Cliente', 'Abogado Asignado', 'Cliente', 'Contacto']],
       body: tableData,
       theme: 'grid',
       headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontSize: 9 },

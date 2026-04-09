@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, CheckSquare, Calendar, Database, LogOut, Users, X, Loader2, Mail, Lock, Archive, PieChart } from 'lucide-react';
+import { LayoutDashboard, CheckSquare, Calendar, Database, LogOut, Users, X, Loader2, Mail, Lock, Archive, PieChart, Coins, Menu, ChevronLeft, ChevronRight, Landmark } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
@@ -14,8 +14,9 @@ export default function Layout() {
   
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [profileData, setProfileData] = useState({ nombre: '', telefono: '', direccion: '' });
+  const [profileData, setProfileData] = useState({ nombre: '', telefono: '', direccion: '', email: '' });
   const [profileMsg, setProfileMsg] = useState({ text: '', type: '' });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
   // Limpia cualquier preferencia anterior de dark mode
   useEffect(() => {
@@ -23,52 +24,18 @@ export default function Layout() {
     localStorage.removeItem('theme');
   }, []);
 
-  // Hook global de notificaciones push
+  // Se eliminó el Hook global de notificaciones push de tareas
+  // ya que se retiró el módulo de Tareas. Se puede readaptar para pagos vencidos.
   useEffect(() => {
-    if (!userData?.uid && !userData?.id) return;
-    const userId = userData.uid || userData.id;
-
-    if ("Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission();
-    }
-
-    const q = query(collection(db, 'tareas'), where('assigneeId', '==', userId));
-    let isFirstRun = true;
-
-    const unsub = onSnapshot(q, (snapshot) => {
-      if (isFirstRun) {
-        isFirstRun = false;
-        return;
-      }
-      
-      snapshot.docChanges().forEach((change) => {
-        if ("Notification" in window && Notification.permission === "granted") {
-          const task = change.doc.data();
-          // Solo notificar si la tarea cambió y es del usuario logueado en otra ventana, o nueva
-          if (change.type === 'added') {
-            new Notification('¡Nueva Tarea Asignada!', {
-              body: `📌 ${task.title}\n📁 ${task.caseInfo || ''}`,
-              icon: 'https://cdn-icons-png.flaticon.com/512/3276/3276856.png' // Icono neutral
-            });
-          } else if (change.type === 'modified') {
-             // Opcional: Podrías notificar modificaciones importantes
-             new Notification('Tarea Actualizada', {
-               body: `La tarea "${task.title}" ha sido editada o comentada.`,
-               icon: 'https://cdn-icons-png.flaticon.com/512/3276/3276856.png'
-             });
-          }
-        }
-      });
-    });
-
-    return () => unsub();
+    // Espacio reservado para notificaciones de Finanzas en el futuro
   }, [userData]);
 
   const openProfile = () => {
     setProfileData({
       nombre: userData?.nombre || '',
       telefono: userData?.telefono || '',
-      direccion: userData?.direccion || ''
+      direccion: userData?.direccion || '',
+      email: userData?.email || ''
     });
     setProfileMsg({ text: '', type: '' });
     setIsProfileOpen(true);
@@ -88,7 +55,8 @@ export default function Layout() {
       await updateDoc(doc(db, 'users', userId), {
         nombre: profileData.nombre,
         telefono: profileData.telefono,
-        direccion: profileData.direccion
+        direccion: profileData.direccion,
+        email: profileData.email
       });
       setProfileMsg({ text: '¡Perfil actualizado con éxito!', type: 'success' });
       setTimeout(() => setIsProfileOpen(false), 2000);
@@ -100,12 +68,13 @@ export default function Layout() {
   };
 
   const handleSendPasswordReset = async () => {
-     if (!userData?.email) {
-        setProfileMsg({ text: 'No se encontró tu correo corporativo.', type: 'error' });
+     const emailToSend = profileData.email || userData?.email;
+     if (!emailToSend) {
+        setProfileMsg({ text: 'Por favor, ingrese un correo válido de su cuenta.', type: 'error' });
         return;
      }
      try {
-       await sendPasswordResetEmail(auth, userData.email);
+       await sendPasswordResetEmail(auth, emailToSend);
        setProfileMsg({ text: 'Correo enviado. Revisa tu bandeja de entrada o SPAM.', type: 'success' });
      } catch (err) {
        console.error(err);
@@ -113,30 +82,42 @@ export default function Layout() {
      }
   };
 
-  const navigation = [
-    { name: 'Dashboard Inicial', href: '/dashboard', icon: PieChart },
-    { name: 'Directorio CRM', href: '/crm', icon: Users },
-    { name: 'Control de Expedientes', href: '/expedientes', icon: LayoutDashboard },
-    { name: 'Delegador de Tareas', href: '/tareas', icon: CheckSquare },
-    { name: 'Mis Tareas', href: '/mis-tareas', icon: CheckSquare },
-    { name: 'Calendario Corporativo', href: '/agenda', icon: Calendar },
-    { name: 'Archivo de Tareas', href: '/archivo-tareas', icon: Archive },
-    { name: 'Catálogos Base', href: '/catalogos', icon: Database },
+  const baseNavigation = [
+    { name: 'Caja & Tesorería Patrimonial', href: '/caja', icon: Database },
+    { name: 'Tributación y Cierre', href: '/tributacion', icon: Landmark },
+    { name: 'Honorarios Fijos', href: '/honorarios-fijos', icon: LayoutDashboard },
+    { name: 'Honorarios Variables', href: '/honorarios-variables', icon: Coins },
+    { name: 'Egresos (Gastos)', href: '/egresos', icon: CheckSquare },
+    { name: 'Directorio General', href: '/crm', icon: Archive },
+    { name: 'Personal', href: '/personal', icon: Users },
   ];
 
-  if (userData?.rol === 'admin') {
-    navigation.push({ name: 'Personal', href: '/personal', icon: Users });
-  }
+  const navigation = userData?.rol === 'colaborador'
+    ? baseNavigation.filter(item => item.href !== '/caja' && item.href !== '/tributacion')
+    : baseNavigation;
 
   return (
     <div className="flex h-screen overflow-hidden font-sans glass-bg">
+      {/* Overlay for mobile */}
+      {isSidebarOpen && (
+         <div 
+           className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 md:hidden"
+           onClick={() => setIsSidebarOpen(false)}
+         />
+      )}
       {/* Sidebar navigation */}
-      <div className="w-64 bg-brand-900/95 dark:bg-slate-950/90 backdrop-blur-xl border-r border-brand-800 dark:border-slate-700 flex flex-col shrink-0 shadow-xl z-20 transition-colors duration-500">
+      <div className={`fixed inset-y-0 left-0 z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:relative md:translate-x-0 ${isSidebarOpen ? 'w-64' : 'w-20 md:w-20 w-64'} bg-brand-900/95 dark:bg-slate-950/90 backdrop-blur-xl border-r border-brand-800 dark:border-slate-700 flex flex-col shrink-0 shadow-xl transition-all duration-300`}>
         <div className="h-20 flex items-center justify-center border-b border-brand-800 dark:border-slate-700">
-          <div className="text-center">
-            <h1 className="text-2xl font-black text-white tracking-tight">VINDEX</h1>
-            <p className="text-brand-400 font-bold uppercase tracking-[0.2em] text-[8px] mt-0.5">Legal Group</p>
-          </div>
+          {isSidebarOpen ? (
+            <div className="text-center transition-opacity duration-300">
+              <h1 className="text-2xl font-black text-white tracking-tight">VINDEX</h1>
+              <p className="text-brand-400 font-bold uppercase tracking-[0.2em] text-[8px] mt-0.5">Finance</p>
+            </div>
+          ) : (
+            <div className="text-center transition-opacity duration-300">
+              <h1 className="text-2xl font-black text-white tracking-tight">V</h1>
+            </div>
+          )}
         </div>
         
         <div className="flex-1 py-6 flex flex-col gap-2 overflow-y-auto custom-scrollbar px-3">
@@ -147,38 +128,42 @@ export default function Layout() {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg font-bold transition-all ${
+                title={!isSidebarOpen ? item.name : ""}
+                className={`flex items-center ${isSidebarOpen ? 'gap-3 px-4' : 'justify-center px-0'} py-3 rounded-lg font-bold transition-all ${
                   isActive 
                     ? 'bg-brand-800 text-white shadow-md border-l-4 border-brand-400' 
                     : 'text-brand-300 hover:bg-brand-800/50 hover:text-white border-l-4 border-transparent'
                 }`}
               >
-                <Icon size={20} className={isActive ? 'text-brand-400' : 'text-brand-400/70'} />
-                <span className="text-sm tracking-wide">{item.name}</span>
+                <Icon size={20} className={isActive ? 'text-brand-400 shrink-0' : 'text-brand-400/70 shrink-0'} />
+                {isSidebarOpen && <span className="text-sm tracking-wide line-clamp-1">{item.name}</span>}
               </Link>
             );
           })}
         </div>
 
         <div className="p-4 border-t border-brand-800 bg-brand-900">
-          <div onClick={openProfile} className="flex items-center gap-3 mb-4 px-3 py-2.5 cursor-pointer hover:bg-brand-800 rounded-lg transition-all group" title="Editar Mi Perfil">
-            <div className="w-10 h-10 rounded-lg bg-brand-700 flex items-center justify-center font-black text-white shadow-inner uppercase group-hover:bg-brand-600 transition-colors text-lg">
+          <div onClick={openProfile} className={`flex items-center ${isSidebarOpen ? 'gap-3 px-3' : 'justify-center px-0'} mb-4 py-2.5 cursor-pointer hover:bg-brand-800 rounded-lg transition-all group`} title="Editar Mi Perfil">
+            <div className="w-10 h-10 shrink-0 rounded-lg bg-brand-700 flex items-center justify-center font-black text-white shadow-inner uppercase group-hover:bg-brand-600 transition-colors text-lg">
               {userData?.nombre ? userData.nombre.charAt(0) : 'U'}
             </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-bold text-brand-50 tracking-wide group-hover:text-white transition-colors truncate">{userData?.nombre || 'Usuario'}</p>
-              <p className="text-[10px] uppercase tracking-wider text-brand-400 font-bold mt-0.5">
-                {userData?.rol === 'admin' ? 'Administrador' : 'Empleado'}
-              </p>
-            </div>
+            {isSidebarOpen && (
+              <div className="flex-1 overflow-hidden transition-opacity duration-300">
+                <p className="text-sm font-bold text-brand-50 tracking-wide group-hover:text-white transition-colors truncate">{userData?.nombre || 'Usuario'}</p>
+                <p className="text-[10px] uppercase tracking-wider text-brand-400 font-bold mt-0.5">
+                  {userData?.rol === 'admin' ? 'Administrador' : 'Empleado'}
+                </p>
+              </div>
+            )}
           </div>
           
           <button 
             onClick={logout}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 w-full bg-brand-800 hover:bg-brand-700 dark:bg-slate-800 dark:hover:bg-slate-700 hover:text-white text-brand-200 rounded-lg transition-colors text-xs font-bold uppercase tracking-wider"
+            title={!isSidebarOpen ? "Cerrar Sesión" : ""}
+            className={`flex items-center justify-center ${isSidebarOpen ? 'gap-2 px-4' : 'px-0'} py-2.5 w-full bg-brand-800 hover:bg-brand-700 dark:bg-slate-800 dark:hover:bg-slate-700 hover:text-white text-brand-200 rounded-lg transition-colors text-xs font-bold uppercase tracking-wider`}
           >
-            <LogOut size={16} />
-            Cerrar Sesión
+            <LogOut size={16} className="shrink-0" />
+            {isSidebarOpen && <span>Cerrar Sesión</span>}
           </button>
         </div>
       </div>
@@ -205,6 +190,10 @@ export default function Layout() {
                    <div>
                       <label className="block text-[10px] font-bold text-brand-500 uppercase tracking-widest mb-1.5">Teléfono (Celular) <span className="text-red-500">*</span></label>
                       <input required value={profileData.telefono} onChange={e => setProfileData({...profileData, telefono: e.target.value})} className="w-full border border-brand-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-900 focus:border-brand-900 transition-all font-medium text-brand-900" />
+                   </div>
+                   <div>
+                      <label className="block text-[10px] font-bold text-brand-500 uppercase tracking-widest mb-1.5">Correo Electrónico (Acceso) <span className="text-red-500">*</span></label>
+                      <input required type="email" value={profileData.email} onChange={e => setProfileData({...profileData, email: e.target.value})} className="w-full border border-brand-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-brand-900 focus:border-brand-900 transition-all font-medium text-brand-900" placeholder="correo@ejemplo.com" />
                    </div>
                    <div>
                       <label className="block text-[10px] font-bold text-brand-500 uppercase tracking-widest mb-1.5">Dirección</label>
@@ -240,15 +229,24 @@ export default function Layout() {
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-20 glass-panel border-b-0 flex items-center justify-between px-10 shrink-0 shadow-sm relative rounded-none border-t-0 border-x-0">
-          <h2 className="text-xl font-black text-brand-900 dark:text-white tracking-tight">
-             {navigation.find(n => location.pathname.startsWith(n.href))?.name || "Panel de Comando"}
-          </h2>
+      <div className="flex-1 flex flex-col overflow-hidden w-full">
+        <header className="h-20 glass-panel border-b-0 flex items-center justify-between px-4 md:px-10 shrink-0 shadow-sm relative rounded-none border-t-0 border-x-0">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
+              className="p-2 bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-700 rounded-lg border border-brand-100 dark:border-slate-700 text-brand-600 dark:text-brand-400 transition-colors shadow-sm"
+              title={isSidebarOpen ? "Contraer menú" : "Expandir menú"}
+            >
+              <Menu size={20} />
+            </button>
+            <h2 className="text-xl font-black text-brand-900 dark:text-white tracking-tight">
+               {navigation.find(n => location.pathname.startsWith(n.href))?.name || "Panel de Comando"}
+            </h2>
+          </div>
           <div className="hidden"></div>
         </header>
 
-        <main className="flex-1 overflow-auto p-8 relative custom-scrollbar">
+        <main className="flex-1 overflow-auto p-4 md:p-8 relative custom-scrollbar w-full">
            <AnimatePresence mode="wait">
              <motion.div
                key={location.pathname}

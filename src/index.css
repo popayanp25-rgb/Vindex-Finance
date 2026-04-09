@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  font-size: 14px;
+}
+
 @layer base {
   body {
     @apply text-brand-900 antialiased transition-colors duration-500 bg-brand-50;

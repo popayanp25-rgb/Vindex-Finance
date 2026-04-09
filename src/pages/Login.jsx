@@ -23,7 +23,7 @@ export default function Login() {
       setMessage('');
       setLoading(true);
       await login(email, password);
-      navigate('/dashboard');
+      navigate('/caja');
     } catch {
       setError('Credenciales incorrectas. Verifique por favor.');
     }
@@ -58,7 +58,7 @@ export default function Login() {
           <h1 className="text-3xl font-black text-brand-900 tracking-tight flex items-center justify-center gap-2">
             VINDEX
           </h1>
-          <p className="text-brand-500 font-bold uppercase tracking-[0.2em] text-[10px] mt-1">Legal Group S.A.C.</p>
+          <p className="text-brand-500 font-bold uppercase tracking-[0.2em] text-[10px] mt-1">Finance</p>
           <div className="h-px w-16 bg-brand-200 mx-auto mt-4 mb-3"></div>
           <p className="text-brand-800 font-semibold text-sm">Excelencia Jurídica</p>
           <p className="text-brand-500 font-bold text-xs italic mt-0.5">con Integridad</p>

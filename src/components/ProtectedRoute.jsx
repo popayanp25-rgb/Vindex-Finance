@@ -3,7 +3,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
-export default function ProtectedRoute({ requireAdmin = false }) {
+export default function ProtectedRoute({ requireAdmin = false, blockColaborador = false }) {
   const { currentUser, userData, loading } = useAuth();
 
   if (loading) {
@@ -20,8 +20,13 @@ export default function ProtectedRoute({ requireAdmin = false }) {
   }
 
   if (requireAdmin && userData?.rol !== 'admin') {
-    // Si intenta entrar a una vista de administrador (ej Users), lo mandamos al dashboard
-    return <Navigate to="/dashboard" replace />;
+    // Si intenta entrar a una vista de administrador estricta, lo mandamos a caja
+    return <Navigate to="/caja" replace />;
+  }
+
+  if (blockColaborador && userData?.rol === 'colaborador') {
+    // Si el colaborador intenta forzar la URL de finanzas maestras, repeler hacia CRM
+    return <Navigate to="/crm" replace />;
   }
 
   // Renderiza los sub-componentes (las vistas protegidas)
