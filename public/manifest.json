@@ -1,0 +1,21 @@
+{
+  "short_name": "Vindex",
+  "name": "VINDEX Finance",
+  "icons": [
+    {
+      "src": "/logo192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/logo512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0f172a",
+  "display": "standalone",
+  "theme_color": "#0f172a",
+  "description": "Plataforma de Control Financiero de VINDEX."
+}
