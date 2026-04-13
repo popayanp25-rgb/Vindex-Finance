@@ -272,7 +272,7 @@ function TributacionViewContent() {
       const igvAPagarMensual = Math.max(0, data.igvVentas - data.igvCompras);
       const baseImponibleDelMes = data.ingresoBruto - igvAPagarMensual;
 
-      const baseLegalDelMes = baseImponibleDelMes - data.egresoFormal;
+      const baseLegalDelMes = baseImponibleDelMes - (data.egresoFormal + (data.igvCompras || 0));
       const reservaDelMes = baseLegalDelMes > 0 ? (baseLegalDelMes * 0.09) : 0;
       anualCofreGenerado += reservaDelMes;
 
@@ -293,9 +293,8 @@ function TributacionViewContent() {
   const utilidadBrutaLegal = baseImponibleMensual - totalEgresosFormales;
   const utilidadBrutaInformal = ingresosInformalesMes - totalEgresosInformales;
   
-  // El 9% se reserva estrictamente sobre la Base Legal sin IGV
-  const baseNetaLegal = baseImponibleMensual - baseEgresosMensual;
-  const reservaRenta9Pct = baseNetaLegal > 0 ? (baseNetaLegal * 0.09) : 0;
+  // El 9% se reserva estrictamente sobre la Utilidad Bruta Formal
+  const reservaRenta9Pct = utilidadBrutaLegal > 0 ? (utilidadBrutaLegal * 0.09) : 0;
   
   // Renta Anual Calcs
   const anualBaseRentaMype = Math.max(0, anualIngresosFormalesBase - anualEgresosFormalesBase);
@@ -444,7 +443,7 @@ function TributacionViewContent() {
              head: [['Impuestos y Reservas a Separar de la Caja', 'Montos a Pagar/Reservar (S/)']],
              body: [
                  ['Renta Exigida (1% A la SUNAT)', formatCurrency(rentaMensual1Pct)],
-                 [`Cofre Reserva (9% Al Sistema VINDEX) - Sobre Base Neta: ${formatCurrency(baseNetaLegal)}`, formatCurrency(reservaRenta9Pct)],
+                 [`Cofre Reserva (9% Al Sistema VINDEX) - Sobre Base Neta: ${formatCurrency(utilidadBrutaLegal)}`, formatCurrency(reservaRenta9Pct)],
                  [igvAPagarMes > 0 ? 'IGV a Pagar (A la SUNAT)' : 'IGV a Favor', formatCurrency(Math.abs(igvAPagarMes))]
              ],
              headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: 'bold' },
@@ -796,7 +795,7 @@ function TributacionViewContent() {
                       </span>
                       <span className="text-2xl font-black text-white">{formatCurrency(reservaRenta9Pct)}</span>
                       <div className="bg-slate-800 rounded-md py-0.5 px-2 w-max mt-1">
-                         <span className="text-[8px] text-brand-200 uppercase font-black tracking-wider">Base Neta SUNAT: {formatCurrency(baseNetaLegal)}</span>
+                         <span className="text-[8px] text-brand-200 uppercase font-black tracking-wider">Utilidad Bruta Formal: {formatCurrency(utilidadBrutaLegal)}</span>
                       </div>
                       <p className="text-[9px] font-bold text-brand-300 mt-1.5 leading-tight">Provisión retenida sobre tu Utilidad Libre de IGV.</p>
                    </div>

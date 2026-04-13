@@ -232,22 +232,27 @@ export default function CajaView() {
       // Sincronizando la matemática de Renta que se definió en Tributación
       const baseImponibleMensual = factTotal - igvAPagar;
       const renta1 = baseImponibleMensual * 0.01;
-      const baseNetaLegal = baseImponibleMensual - egFormBase;
-      const reserva9_teorico = baseNetaLegal > 0 ? (baseNetaLegal * 0.09) : 0;
+      const gastadoTotalFormalOperativo = gastadoOperativoTotal - egInfoOperativo;
+      const utilidadBrutaFormal = baseImponibleMensual - gastadoTotalFormalOperativo;
+      const reserva9_teorico = utilidadBrutaFormal > 0 ? (utilidadBrutaFormal * 0.09) : 0;
       const reserva9 = Math.max(0, reserva9_teorico - gastadoCofreMonto);
 
-      const ingInfo = recTotal - (factBase + igvCobrado);
-      const egInfoOperativo = gastadoOperativoTotal - (egFormBase + igvPagado);
-
-      const gastadoTotalFormalOperativo = gastadoOperativoTotal - egInfoOperativo;
       const saldoFisicoFormalOperativo = factTotal - gastadoTotalFormalOperativo;
       const retencionesFormales = igvAPagar + renta1 + reserva9;
       
       const generadoLegal = saldoFisicoFormalOperativo - retencionesFormales + ingresoExtraFormal;
-      const disponibleLegal = generadoLegal - retiradoFormal;
+      let disponibleLegal = generadoLegal - retiradoFormal;
       
       const generadoInformal = ingInfo - egInfoOperativo;
-      const disponibleInformal = generadoInformal - retiradoInformal;
+      let disponibleInformal = generadoInformal - retiradoInformal;
+
+      if (disponibleLegal < 0) {
+          disponibleInformal += disponibleLegal;
+          disponibleLegal = 0;
+      } else if (disponibleInformal < 0) {
+          disponibleLegal += disponibleInformal;
+          disponibleInformal = 0;
+      }
 
       return {
           recTotal, gastadoTotal: gastadoFisicoBruto, 
@@ -474,23 +479,23 @@ export default function CajaView() {
                    
                    const fpDate = new Date(anioCaja, Number(mes.num) - 1, 28, 12, 0, 0).toISOString();
                    
-                   if (metrics.generadoLegal > 0) {
+                   if (metrics.generadoLegal !== 0 && Math.abs(metrics.generadoLegal) > 0.01) {
                        list.push({
                            id: `v-leg-${mes.num}`,
-                           tipo: 'ingreso',
+                           tipo: metrics.generadoLegal > 0 ? 'ingreso' : 'egreso',
                            titulo: `Utilidad Formal`,
-                           subtitulo: `Abono Mensual Calculado • ${mes.nombre}`,
-                           monto: metrics.generadoLegal,
+                           subtitulo: metrics.generadoLegal > 0 ? `Abono Mensual Calculado • ${mes.nombre}` : `Pérdida Mensual Calculada • ${mes.nombre}`,
+                           monto: Math.abs(metrics.generadoLegal),
                            fecha: fpDate,
                        });
                    }
-                   if (metrics.generadoInformal > 0) {
+                   if (metrics.generadoInformal !== 0 && Math.abs(metrics.generadoInformal) > 0.01) {
                        list.push({
                            id: `v-inf-${mes.num}`,
-                           tipo: 'ingreso',
+                           tipo: metrics.generadoInformal > 0 ? 'ingreso' : 'egreso',
                            titulo: `Utilidad Informal`,
-                           subtitulo: `Abono Mensual Calculado • ${mes.nombre}`,
-                           monto: metrics.generadoInformal,
+                           subtitulo: metrics.generadoInformal > 0 ? `Abono Mensual Calculado • ${mes.nombre}` : `Pérdida Mensual Calculada • ${mes.nombre}`,
+                           monto: Math.abs(metrics.generadoInformal),
                            fecha: fpDate,
                        });
                    }
