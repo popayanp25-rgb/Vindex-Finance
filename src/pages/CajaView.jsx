@@ -232,6 +232,9 @@ export default function CajaView() {
       // Sincronizando la matemática de Renta que se definió en Tributación
       const baseImponibleMensual = factTotal - igvAPagar;
       const renta1 = baseImponibleMensual * 0.01;
+      const ingInfo = recTotal - (factBase + igvCobrado);
+      const egInfoOperativo = gastadoOperativoTotal - (egFormBase + igvPagado);
+      
       const gastadoTotalFormalOperativo = gastadoOperativoTotal - egInfoOperativo;
       const utilidadBrutaFormal = baseImponibleMensual - gastadoTotalFormalOperativo;
       const reserva9_teorico = utilidadBrutaFormal > 0 ? (utilidadBrutaFormal * 0.09) : 0;
