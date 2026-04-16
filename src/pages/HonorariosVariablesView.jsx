@@ -40,6 +40,7 @@ export default function HonorariosVariablesView() {
   
   const [clientes, setClientes] = useState([]);
   const [servicios, setServicios] = useState([]);
+  const [contrapartes, setContrapartes] = useState([]);
 
   useEffect(() => {
     const unsubClientes = onSnapshot(query(collection(db, 'clientes')), (snapshot) => {
@@ -48,7 +49,10 @@ export default function HonorariosVariablesView() {
     const unsubServicios = onSnapshot(query(collection(db, 'servicios')), (snapshot) => {
       setServicios(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
-    return () => { unsubClientes(); unsubServicios(); };
+    const unsubContrapartes = onSnapshot(query(collection(db, 'contrapartes')), (snapshot) => {
+      setContrapartes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => { unsubClientes(); unsubServicios(); unsubContrapartes(); };
   }, []);
 
   const [formData, setFormData] = useState({
@@ -61,7 +65,8 @@ export default function HonorariosVariablesView() {
     estado: 'Pendiente',
     fechaPago: new Date().toISOString().split('T')[0],
     facturado: false,
-    igvRate: 18
+    igvRate: 18,
+    contraparte: ''
   });
 
   const [isEditingIgv, setIsEditingIgv] = useState(false);
@@ -121,7 +126,8 @@ export default function HonorariosVariablesView() {
           montoTotal: montoLimpio,
           estado: formData.estado,
           fechaPago: formData.fechaPago,
-          facturado: formData.facturado
+          facturado: formData.facturado,
+          contraparte: formData.contraparte
         });
       } else {
         await addIngreso({
@@ -134,6 +140,7 @@ export default function HonorariosVariablesView() {
           estado: formData.estado,
           fechaPago: formData.fechaPago,
           facturado: formData.facturado,
+          contraparte: formData.contraparte,
           cronograma: [] // Empty array for backwards compatibility just in case
         });
       }
@@ -154,7 +161,8 @@ export default function HonorariosVariablesView() {
       estado: ingreso.estado || 'Pendiente',
       fechaPago: ingreso.fechaPago || '',
       facturado: ingreso.facturado || false,
-      igvRate: ingreso.igvRate ?? 18
+      igvRate: ingreso.igvRate ?? 18,
+      contraparte: ingreso.contraparte || ''
     });
     setEditingId(ingreso.id);
     setIsModalOpen(true);
@@ -172,7 +180,8 @@ export default function HonorariosVariablesView() {
       montoTotal: '',
       estado: 'Pendiente',
       fechaPago: new Date().toISOString().split('T')[0],
-      facturado: false
+      facturado: false,
+      contraparte: ''
     });
   };
 
@@ -992,6 +1001,45 @@ export default function HonorariosVariablesView() {
                           {clientes.map(c => <option key={c.id} value={`${c.documento} - ${c.nombre}`} />)}
                         </datalist>
                     </div>
+
+                    {/* CLIENT PREVIEW CARD */}
+                    {selectedClientPreview && (
+                    <div className="bg-gradient-to-br from-brand-50 to-white dark:from-slate-800 dark:to-slate-900 border border-brand-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm flex flex-col gap-2 mt-4 mb-4">
+                       <span className="text-[10px] font-black text-brand-500 uppercase tracking-widest mb-1">Previsualización de Cliente</span>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="w-8 h-8 rounded-full bg-brand-200 dark:bg-slate-700 flex items-center justify-center text-brand-800 dark:text-brand-300 font-bold text-sm">
+                          {selectedClientPreview.nombre.charAt(0).toUpperCase()}
+                        </span>
+                        <div>
+                           <h4 className="text-sm font-black text-brand-900 dark:text-white leading-tight">{selectedClientPreview.nombre}</h4>
+                           <p className="text-xs font-medium text-brand-600 dark:text-gray-400">DNI/RUC: {selectedClientPreview.documento}</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                         <div className="bg-white dark:bg-slate-950 px-3 py-2 rounded-lg border border-brand-100 dark:border-slate-800">
+                            <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Celular / Teléfono</span>
+                            <span className="font-bold text-brand-700 dark:text-gray-300">{selectedClientPreview.telefono || 'No registrado'}</span>
+                         </div>
+                         <div className="bg-white dark:bg-slate-950 px-3 py-2 rounded-lg border border-brand-100 dark:border-slate-800 overflow-hidden">
+                            <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Correo</span>
+                            <span className="font-bold text-brand-700 dark:text-gray-300 truncate block text-ellipsis">{selectedClientPreview.correo || 'No registrado'}</span>
+                         </div>
+                         <div className="col-span-2 bg-white dark:bg-slate-950 px-3 py-2 rounded-lg border border-brand-100 dark:border-slate-800">
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Contraparte Específica (Opcional)</label>
+                            <select
+                              value={formData.contraparte}
+                              onChange={(e) => setFormData({...formData, contraparte: e.target.value})}
+                              className="w-full bg-transparent border-none p-0 text-sm font-bold text-brand-700 dark:text-gray-300 focus:ring-0 outline-none"
+                            >
+                              <option value="">{selectedClientPreview.contraparte ? `Usar del cliente: ${selectedClientPreview.contraparte}` : 'Seleccione (Opcional)...'}</option>
+                              {contrapartes.map(c => (
+                                <option key={c.id} value={c.nombre}>{c.nombre}</option>
+                              ))}
+                            </select>
+                         </div>
+                      </div>
+                    </div>
+                    )}
 
                     {/* TIPO Y SERVICIO */}
                     <div>

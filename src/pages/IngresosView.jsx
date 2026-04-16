@@ -35,6 +35,7 @@ export default function IngresosView() {
   const navigate = useNavigate();
   const [clientes, setClientes] = useState([]);
   const [servicios, setServicios] = useState([]);
+  const [contrapartes, setContrapartes] = useState([]);
 
   useEffect(() => {
     const unsubClientes = onSnapshot(query(collection(db, 'clientes')), (snapshot) => {
@@ -43,7 +44,10 @@ export default function IngresosView() {
     const unsubServicios = onSnapshot(query(collection(db, 'servicios')), (snapshot) => {
       setServicios(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
-    return () => { unsubClientes(); unsubServicios(); };
+    const unsubContrapartes = onSnapshot(query(collection(db, 'contrapartes')), (snapshot) => {
+      setContrapartes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => { unsubClientes(); unsubServicios(); unsubContrapartes(); };
   }, []);
 
   // Form State
@@ -55,7 +59,8 @@ export default function IngresosView() {
     moneda: 'PEN',
     montoTotalEjecucion: '',
     porcentajeGlobalEjecucion: '10', // Default 10%
-    igvRate: 18
+    igvRate: 18,
+    contraparte: ''
   });
 
   const [isEditingIgv, setIsEditingIgv] = useState(false);
@@ -137,7 +142,8 @@ export default function IngresosView() {
           montoTotal: montoTotal,
           estado: nuevoEstadoGeneral,
           cronograma: cleanCronograma,
-          igvRate: formData.igvRate ?? 18
+          igvRate: formData.igvRate ?? 18,
+          contraparte: formData.contraparte
         });
       } else {
         await addIngreso({
@@ -150,7 +156,8 @@ export default function IngresosView() {
           montoTotal: montoTotal,
           estado: 'Pendiente',
           cronograma: cleanCronograma,
-          igvRate: formData.igvRate ?? 18
+          igvRate: formData.igvRate ?? 18,
+          contraparte: formData.contraparte
         });
       }
       
@@ -169,7 +176,8 @@ export default function IngresosView() {
       moneda: ingreso.moneda || 'PEN',
       montoTotalEjecucion: ingreso.montoTotalEjecucion || '',
       porcentajeGlobalEjecucion: '10', // Puedes extraerlo de la BD si quisieras
-      igvRate: ingreso.igvRate ?? 18
+      igvRate: ingreso.igvRate ?? 18,
+      contraparte: ingreso.contraparte || ''
     });
     setCronograma(ingreso.cronograma || []);
     setEditingId(ingreso.id);
@@ -180,7 +188,7 @@ export default function IngresosView() {
     setIsModalOpen(false);
     setEditingId(null);
     setSelectedCuotasToRemove([]);
-    setFormData({ expedienteId: '', tipo: 'Honorarios Fijos', servicio: '', descripcion: '', moneda: 'PEN', montoTotalEjecucion: '', porcentajeGlobalEjecucion: '10', igvRate: 18 });
+    setFormData({ expedienteId: '', tipo: 'Honorarios Fijos', servicio: '', descripcion: '', moneda: 'PEN', montoTotalEjecucion: '', porcentajeGlobalEjecucion: '10', igvRate: 18, contraparte: '' });
     setCronograma([{ cuota: 1, monto: '', vencimiento: new Date().toISOString().slice(0, 10) }]);
   };
 
@@ -1447,14 +1455,18 @@ export default function IngresosView() {
                             <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Correo</span>
                             <span className="font-bold text-brand-700 dark:text-gray-300 truncate block text-ellipsis">{selectedClientPreview.correo || 'No registrado'}</span>
                          </div>
-                         <div className="col-span-2 bg-white dark:bg-slate-950 px-3 py-2 rounded-lg border border-brand-100 dark:border-slate-800 flex justify-between items-center">
-                            <div>
-                              <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Contraparte Asignada</span>
-                              <span className="font-bold text-brand-700 dark:text-gray-300">{selectedClientPreview.contraparte || 'No asignada'}</span>
-                            </div>
-                            <div className="w-6 h-6 rounded-full bg-brand-50 dark:bg-slate-800 flex items-center justify-center">
-                              <CheckCircle size={10} className="text-brand-500" />
-                            </div>
+                         <div className="col-span-2 bg-white dark:bg-slate-950 px-3 py-2 rounded-lg border border-brand-100 dark:border-slate-800">
+                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Contraparte Específica (Opcional)</label>
+                            <select
+                              value={formData.contraparte}
+                              onChange={(e) => setFormData({...formData, contraparte: e.target.value})}
+                              className="w-full bg-transparent border-none p-0 text-sm font-bold text-brand-700 dark:text-gray-300 focus:ring-0 outline-none"
+                            >
+                              <option value="">{selectedClientPreview.contraparte ? `Usar del cliente: ${selectedClientPreview.contraparte}` : 'Seleccione (Opcional)...'}</option>
+                              {contrapartes.map(c => (
+                                <option key={c.id} value={c.nombre}>{c.nombre}</option>
+                              ))}
+                            </select>
                          </div>
                       </div>
                     </div>

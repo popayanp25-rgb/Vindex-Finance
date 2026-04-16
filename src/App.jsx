@@ -12,17 +12,18 @@ import CrmView from './pages/CrmView';
 import EgresosView from './pages/EgresosView';
 import TributacionView from './pages/TributacionView';
 import CajaView from './pages/CajaView';
+import DashboardView from './pages/DashboardView';
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route path="/" element={<Navigate to="/caja" replace />} />
-          <Route path="/dashboard" element={<Navigate to="/caja" replace />} />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/login" element={<Login />} />
           
           <Route element={<ProtectedRoute />}>
             <Route element={<Layout />}>
+              <Route path="/dashboard" element={<DashboardView />} />
               <Route path="/crm" element={<CrmView />} />
               <Route path="/honorarios-fijos" element={<HonorariosFijosView />} />
               <Route path="/honorarios-variables" element={<HonorariosVariablesView />} />

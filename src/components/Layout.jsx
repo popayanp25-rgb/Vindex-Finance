@@ -83,6 +83,7 @@ export default function Layout() {
   };
 
   const baseNavigation = [
+    { name: 'Dashboard Analítico', href: '/dashboard', icon: PieChart },
     { name: 'Caja & Tesorería Patrimonial', href: '/caja', icon: Database },
     { name: 'Tributación y Cierre', href: '/tributacion', icon: Landmark },
     { name: 'Honorarios Fijos', href: '/honorarios-fijos', icon: LayoutDashboard },
