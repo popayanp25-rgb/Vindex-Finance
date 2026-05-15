@@ -589,7 +589,17 @@ export default function IngresosView() {
     doc.setFont("helvetica", "bold");
     doc.text(`N° Operación:`, 14, 55);
     doc.setFont("helvetica", "normal");
-    doc.text(`${nOperacion}`, 45, 55);
+    doc.text(`${nOperacion}`, 50, 55);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text(`Fecha de Pago:`, 14, 62);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${cuota.fechaPago || cuota.vencimiento}`, 50, 62);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text(`Fecha Vencimiento:`, 14, 69);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${cuota.vencimiento}`, 50, 69);
     
     doc.setFont("helvetica", "bold");
     doc.text(`Fecha de Emisión:`, pageWidth - 60, 55);
@@ -598,15 +608,15 @@ export default function IngresosView() {
     
     // Línea divisoria
     doc.setDrawColor(226, 232, 240);
-    doc.line(14, 62, pageWidth - 14, 62);
+    doc.line(14, 76, pageWidth - 14, 76);
     
     // Cuerpo del Comprobante
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("Detalle de la Cuota", 14, 75);
+    doc.text("Detalle de la Cuota", 14, 89);
     
     autoTable(doc, {
-      startY: 85,
+      startY: 99,
       head: [['Concepto', 'Cliente / Expediente', 'Vencimiento Original']],
       body: [[
         `${ingreso.tipo} (${ingreso.servicio || 'General'}) - Cuota N° ${idx + 1} de ${(ingreso.cronograma || []).length}`,

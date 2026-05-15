@@ -70,6 +70,7 @@ export default function DashboardView() {
     const tipoHonorarioRev = {};
     const categoriaGasto = {};
     const proveedorGasto = {};
+    const proyeccionMeses = {};
 
     const clientesDict = clientes.reduce((acc, c) => {
       acc[c.documento] = c;
@@ -144,6 +145,34 @@ export default function DashboardView() {
        }
     });
 
+    // Calcular Proyección de Ingresos Pendientes
+    ingresos.forEach(ing => {
+      const addProy = (montoStr, fecha) => {
+         if (!fecha) return;
+         const m = Number(String(montoStr).replace(/,/g, '')) || 0;
+         if (m <= 0) return;
+         const d = new Date(fecha + 'T12:00:00');
+         const sortKey = fecha.slice(0, 7);
+         const monthName = d.toLocaleDateString('es-PE', { month: 'long' });
+         const label = `${monthName.charAt(0).toUpperCase() + monthName.slice(1)} ${d.getFullYear()}`;
+         if (!proyeccionMeses[sortKey]) proyeccionMeses[sortKey] = { label, total: 0 };
+         proyeccionMeses[sortKey].total += m;
+      };
+
+      if (ing.cronograma && ing.cronograma.length > 0) {
+         ing.cronograma.forEach(c => {
+            if (c.estado !== 'Pagado') addProy(c.monto, c.vencimiento);
+         });
+      } else {
+         if (ing.estado !== 'Pagado') addProy(ing.montoTotal, ing.fechaPago);
+      }
+    });
+
+    const proyeccionOrdenada = Object.keys(proyeccionMeses)
+       .sort() // cronológico ascendente (ej. "2026-05", "2026-06")
+       .slice(0, 6) // mostrar hasta 6 meses proyectados
+       .map(key => [proyeccionMeses[key].label, proyeccionMeses[key].total]);
+
     const sortByMax = (obj) => Object.entries(obj).sort((a, b) => b[1] - a[1]).slice(0, 5);
 
     return {
@@ -155,7 +184,8 @@ export default function DashboardView() {
        topMaterias: sortByMax(materiaRev),
        topCategoriasGasto: sortByMax(categoriaGasto),
        topProveedores: sortByMax(proveedorGasto),
-       tipoHonorario: sortByMax(tipoHonorarioRev)
+       tipoHonorario: sortByMax(tipoHonorarioRev),
+       proyeccionIngresos: proyeccionOrdenada
     }
   }, [ingresos, egresos, clientes, servicios, filterMode, filterMonth, filterYear]);
 
@@ -401,7 +431,7 @@ export default function DashboardView() {
       {/* METRICAS SECUNDARIAS */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-        className="grid grid-cols-1 md:grid-cols-2 gap-6"
+        className="grid grid-cols-1 md:grid-cols-3 gap-6"
       >
         <RankedList 
           title="Top Categorías de Gasto" 
@@ -416,6 +446,13 @@ export default function DashboardView() {
           data={metrics.topProveedores} 
           colorClass="text-amber-600 dark:text-amber-400"
           barColorClass="bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.8)]"
+        />
+        <RankedList 
+          title="Proyección de Ingresos" 
+          icon={ArrowUpRight} 
+          data={metrics.proyeccionIngresos} 
+          colorClass="text-cyan-600 dark:text-cyan-400"
+          barColorClass="bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.8)]"
         />
       </motion.div>
 

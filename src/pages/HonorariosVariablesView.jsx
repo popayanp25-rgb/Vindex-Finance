@@ -339,7 +339,12 @@ export default function HonorariosVariablesView() {
     doc.setFont("helvetica", "bold");
     doc.text(`N° Operación:`, 14, 55);
     doc.setFont("helvetica", "normal");
-    doc.text(nOperacion, 45, 55);
+    doc.text(nOperacion, 50, 55);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text(`Fecha de Pago:`, 14, 62);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${ingreso.fechaPago || fechaEmision}`, 50, 62);
     
     doc.setFont("helvetica", "bold");
     doc.text(`Fecha de Emisión:`, pageWidth - 60, 55);
@@ -348,27 +353,27 @@ export default function HonorariosVariablesView() {
 
     // Datos del Cliente
     doc.setFillColor(248, 250, 252);
-    doc.rect(14, 65, pageWidth - 28, 30, 'F');
+    doc.rect(14, 72, pageWidth - 28, 30, 'F');
     
     const docInput = ingreso.expedienteId.split(' - ')[0];
     const client = clientes.find(c => c.documento === docInput);
     
     doc.setFont("helvetica", "bold");
-    doc.text("Datos del Cliente / Pagador:", 20, 75);
+    doc.text("Datos del Cliente / Pagador:", 20, 82);
     doc.setFont("helvetica", "normal");
-    doc.text(`Nombre: ${client ? client.nombre : ingreso.expedienteId}`, 20, 83);
-    doc.text(`Documento: ${docInput}`, 20, 89);
+    doc.text(`Nombre: ${client ? client.nombre : ingreso.expedienteId}`, 20, 90);
+    doc.text(`Documento: ${docInput}`, 20, 96);
     
     // Detalle del Pago
     doc.setFont("helvetica", "bold");
-    doc.text("Detalle del Concepto Cobrado:", 14, 110);
+    doc.text("Detalle del Concepto Cobrado:", 14, 117);
     
     const tableData = [
       [ingreso.tipo, ingreso.servicio || 'Servicio General', formatCurrency(ingreso.montoTotal)]
     ];
     
     autoTable(doc, {
-      startY: 115,
+      startY: 122,
       head: [['Tipo de Honorario', 'Servicio Realizado', 'Monto Pagado']],
       body: tableData,
       theme: 'grid',
